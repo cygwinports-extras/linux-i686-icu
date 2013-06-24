@@ -1,0 +1,37 @@
+CROSS_HOST="i686-pc-linux-gnu"
+inherit cross
+
+NAME="linux-i686-icu"
+VERSION=51.2
+RELEASE=1
+CATEGORY="Devel"
+SUMMARY="International Components for Unicode for Win32 toolchain"
+HOMEPAGE="http://icu-project.org/"
+SRC_URI="http://download.icu-project.org/files/icu4c/${VERSION}/icu4c-${VERSION//./_}-src.tgz"
+SRC_DIR="icu/source"
+
+src_compile() {
+	cd ${S}
+	cygautoreconf
+	mkdir -p ${B}/cross-build
+	cd ${B}/cross-build
+	cygconf --host=$(sh ${S}/config.guess) CC=gcc CXX=g++
+	cygmake
+	cd ${B}
+	cygconf --with-cross-build=${B}/cross-build \
+		--with-data-packaging=library \
+		ac_cv_search_dlopen=no
+	cygmake
+}
+
+src_install() {
+	cd ${B}
+	cyginstall
+
+	rm -fr ${D}${CROSS_BINDIR}/[^i]*
+	rm -fr ${D}${CROSS_BINDIR}/icuinfo
+	rm -fr ${D}${CROSS_PREFIX}/sbin/
+	rm -fr ${D}${CROSS_DATADIR}/man/
+}
+
+DOCS="../license.html ../readme.html ../unicode-license.txt ../packaging/PACKAGES"
